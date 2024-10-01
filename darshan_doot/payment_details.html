@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Details</title>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    <table>
+        <tr>
+            <th>Museum Name</th>
+            <td>{{ museum_name }}</td>
+        </tr>
+        <tr>
+            <th>Visiting Date</th>
+            <td>{{ visiting_date }}</td>
+        </tr>
+        <tr>
+            <th>Total Amount (INR)</th>
+            <td>{{ total_amount }}</td>
+        </tr>
+        <tr>
+            <th>Adults</th>
+            <td>{{ adults }}</td>
+        </tr>
+        <tr>
+            <th>Children</th>
+            <td>{{ children }}</td>
+        </tr>
+    </table>
+    <button onclick="window.location.href='/payment/cancel/{{ ticket_id }}'">Cancel</button>
+    <button onclick="window.location.href='/payment/paynow/{{ ticket_id }}'">Pay Now</button>
+</body>
+</html>
