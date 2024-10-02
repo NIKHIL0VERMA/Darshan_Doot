@@ -1,8 +1,7 @@
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
-from .models import Museum, Ticket, Event
+from .models import EventModel, MuseumModel, TicketModel
 from .serializers import MuseumSerializer, TicketSerializer, EventSerializer
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -19,7 +18,7 @@ class MuseumViewSet(viewsets.ReadOnlyModelViewSet):
     """
     A viewset for viewing and editing museum instances.
     """
-    queryset = Museum.objects.all()
+    queryset = MuseumModel.objects.all()
     serializer_class = MuseumSerializer
 
     def list(self, request):
@@ -47,7 +46,7 @@ class TicketViewSet(viewsets.ModelViewSet):
     """
     A viewset for managing ticket instances.
     """
-    queryset = Ticket.objects.all()
+    queryset = TicketModel.objects.all()
     serializer_class = TicketSerializer
 
     def create(self, request):
@@ -78,7 +77,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         nationality = request.data['nationality']
 
         # Check if the museum is open on the visiting date
-        museum = Museum.objects.filter(name=museum_name).first()
+        museum = MuseumModel.objects.filter(name=museum_name).first()
         if not museum:
             return Response({'error': 'Museum not found.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -89,12 +88,12 @@ class TicketViewSet(viewsets.ModelViewSet):
 
         # Calculate total amount based on nationality
         if nationality.lower() == 'indian':
-            total_amount = (museum.indian_adult_fee * adults) + (museum.indian_child_fee * children)
+            total_amount = (MuseumModel.indian_adult_fee * adults) + (MuseumModel.indian_child_fee * children)
         else:
-            total_amount = (museum.international_citizen_fee * adults) + (museum.international_citizen_fee * children)
+            total_amount = (MuseumModel.international_citizen_fee * adults) + (MuseumModel.international_citizen_fee * children)
 
         # Create the ticket
-        ticket = Ticket(
+        ticket = TicketModel(
             user_phone=user_phone,
             user_email=user_email,
             museum=museum,
@@ -133,12 +132,12 @@ class TicketViewSet(viewsets.ModelViewSet):
         Update a ticket.
         """
         try:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id)
             # Update fields as necessary
             # Example: ticket.user_phone = request.data.get('user_phone')
             ticket.save()
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
-        except Ticket.DoesNotExist:
+        except TicketModel.DoesNotExist:
             return Response({'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, ticket_id):
@@ -146,10 +145,10 @@ class TicketViewSet(viewsets.ModelViewSet):
         Delete a ticket.
         """
         try:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id)
             ticket.delete()
             return Response({'status': 'success'}, status=status.HTTP_204_NO_CONTENT)
-        except Ticket.DoesNotExist:
+        except TicketModel.DoesNotExist:
             return Response({'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def verify(self, request, ticket_id):
@@ -158,9 +157,9 @@ class TicketViewSet(viewsets.ModelViewSet):
         """
         verification_code = request.data.get('verification_code')
         try:
-            ticket = Ticket.objects.get(ticket_id=ticket_id, verification_code=verification_code)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id, verification_code=verification_code)
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
-        except Ticket.DoesNotExist:
+        except TicketModel.DoesNotExist:
             return Response({'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
     def payment_verify(self, request, ticket_id):
@@ -169,7 +168,7 @@ class TicketViewSet(viewsets.ModelViewSet):
         """
         transaction_id = request.data.get('transaction_id')
         try:
-            ticket = Ticket.objects.get(ticket_id=ticket_id, transaction_id=transaction_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id, transaction_id=transaction_id)
             ticket.payment_status = 'paid'
             ticket.verification_code = 'generated_verification_code'  # Generate a unique verification code
             ticket.transaction_id = transaction_id
@@ -182,14 +181,14 @@ class TicketViewSet(viewsets.ModelViewSet):
                 'adults': ticket.adults,
                 'children': ticket.children
             }, status=status.HTTP_200_OK)
-        except Ticket.DoesNotExist:
+        except TicketModel.DoesNotExist:
             return Response({'status': 'not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class EventViewSet(viewsets.ModelViewSet):
     """
     A viewset for managing event instances.
     """
-    queryset = Event.objects.all()
+    queryset = EventModel.objects.all()
     serializer_class = EventSerializer
 
     def list(self, request):
@@ -246,21 +245,21 @@ def stripe_webhook(request):
         payment_intent = event.data.object
         ticket_id = payment_intent.metadata.get('ticket_id')
         if ticket_id:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id)
             ticket.payment_status = 'paid'
             ticket.save()
     elif event.type == 'payment_intent.canceled':
         payment_intent = event.data.object
         ticket_id = payment_intent.metadata.get('ticket_id')
         if ticket_id:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id)
             ticket.payment_status = 'cancelled'
             ticket.save()
     elif event.type == 'charge.refunded':
         charge = event.data.object
         ticket_id = charge.metadata.get('ticket_id')
         if ticket_id:
-            ticket = Ticket.objects.get(ticket_id=ticket_id)
+            ticket = TicketModel.objects.get(ticket_id=ticket_id)
             ticket.payment_status = 'refunded'
             ticket.save()
 
@@ -271,7 +270,7 @@ def payment_view(request, ticket_id):
     Render the payment details for a specific ticket.
     """
     try:
-        ticket = Ticket.objects.get(ticket_id=ticket_id)
+        ticket = TicketModel.objects.get(ticket_id=ticket_id)
         context = {
             'museum_name': ticket.museum.name,
             'visiting_date': ticket.visiting_date,
@@ -282,5 +281,5 @@ def payment_view(request, ticket_id):
             'payment_status': ticket.payment_status,
         }
         return render(request, 'payment_details.html', context)
-    except Ticket.DoesNotExist:
+    except TicketModel.DoesNotExist:
         return Response({'error': 'Ticket not found.'}, status=status.HTTP_404_NOT_FOUND)

@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
-from .models import Museum, Event, Ticket
+from .models import EventModel, Museum, Ticket
 from django.contrib.auth.models import User
 import json
 from unittest.mock import patch
@@ -69,7 +69,7 @@ class EventAPITests(APITestCase):
             "time_slot": "10 AM - 12 PM",
             "ticket_limit": 100
         }
-        self.event = Event.objects.create(museum=self.museum, **self.event_data)
+        self.event = EventModel.objects.create(museum=self.museum, **self.event_data)
 
     def test_create_event(self):
         url = reverse('museum-events-list', kwargs={'museum_pk': self.museum.pk})
@@ -82,7 +82,7 @@ class EventAPITests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Event.objects.count(), 2)
+        self.assertEqual(EventModel.objects.count(), 2)
 
     def test_get_events(self):
         url = reverse('museum-events-list', kwargs={'museum_pk': self.museum.pk})
