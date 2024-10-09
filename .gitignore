@@ -5,7 +5,7 @@
 __pycache__
 db.sqlite3
 media
-/darshan_doot/migrations
+darshan_doot/migrations
 
 # Backup files #
 *.bak

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import EventModel, Museum, Ticket
+from .models import Event, Museum, Ticket
 
 class MuseumSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +8,7 @@ class MuseumSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EventModel
+        model = Event
         fields = '__all__'
 
 class TicketSerializer(serializers.ModelSerializer):

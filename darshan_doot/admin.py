@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db.models import Sum
-from .models import Museum, Ticket, Event  # Import your models
+from .models import Event, Museum, Ticket
 
 @admin.register(Museum)
 class MuseumAdmin(admin.ModelAdmin):
