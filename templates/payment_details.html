@@ -11,26 +11,42 @@
             margin: 0;
             padding: 20px;
             background-color: #f8f9fa;
+            color: #333;
         }
         h1 {
-            color: #333;
             text-align: center;
             margin-bottom: 20px;
+            font-size: 2em;
+            color: #007bff; /* Bootstrap primary color */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+        }
+        th {
+            background-color: #e9ecef;
         }
         /* Style for buttons */
         button {
             background-color: #28a745; /* Green */
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             margin: 10px 5px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
         button:hover {
             background-color: #218838; /* Darker green */
+            transform: scale(1.05);
         }
         button:focus {
             outline: none;
@@ -40,36 +56,30 @@
         async function verifyPayment() {
             const ticketId = '{{ ticket_id }}'; // Get ticket ID from the context
             const transactionId = Math.random().toString(36).substr(2, 15); // Generate a random transaction ID for testing
-            const response = await fetch(`${window.location.origin}/ticket/payment-verify/${ticketId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken') // Include CSRF token for security
-                },
-                body: JSON.stringify({ transaction_id: transactionId })
-            });
+            try {
+                const response = await fetch(`/ticket/payment-verify/${ticketId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') // Include CSRF token for security
+                    },
+                    body: JSON.stringify({ transaction_id: transactionId })
+                });
 
-            const data = await response.json();
-            if (response.ok) {
-                alert('Payment verified successfully: ' + JSON.stringify(data));
-            } else {
-                alert('Error verifying payment: ' + data.error);
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Payment verified successfully: ' + JSON.stringify(data));
+                } else {
+                    alert('Error verifying payment: ' + (data.error || 'An unknown error occurred.'));
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
             }
         }
 
         function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+            const cookieValue = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+            return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : null;
         }
     </script>
 </head>
@@ -97,7 +107,9 @@
             <td>{{ children }}</td>
         </tr>
     </table>
-    <button onclick="window.location.href='/payment/cancel/{{ ticket_id }}'">Cancel</button>
-    <button onclick="verifyPayment()">Pay Now</button>
+    <div style="text-align: center;">
+        <button onclick="#">Cancel</button>
+        <button onclick="verifyPayment()">Pay Now</button>
+    </div>
 </body>
 </html>

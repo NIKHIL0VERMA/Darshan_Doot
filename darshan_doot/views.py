@@ -10,8 +10,9 @@ import stripe
 import string
 import random
 from django.db import transaction
+from django.contrib.auth.views import LoginView
+from django.shortcuts import redirect
 from datetime import datetime
-import pytz
 from django.shortcuts import render
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -273,7 +274,7 @@ def stripe_webhook(request):
 
     return HttpResponse(status=200)
 
-def payment_view(request, ticket_id):
+def PaymentView(request, ticket_id):
     """
     Render the payment details for a specific ticket.
     """
@@ -291,3 +292,4 @@ def payment_view(request, ticket_id):
         return render(request, 'payment_details.html', context)
     except Ticket.DoesNotExist:
         return Response({'error': 'Ticket not found.'}, status=status.HTTP_404_NOT_FOUND)
+    
