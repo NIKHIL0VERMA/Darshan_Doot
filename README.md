@@ -52,8 +52,8 @@ To set up the project locally, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/NIKHIL0VERMA/darshan_doot.git
-   cd darshan_doot
+   git clone https://github.com/NIKHIL0VERMA/Darshan_Doot.git
+   cd Darshan_Doot
    ```
 
 2. **Create a virtual environment**:
